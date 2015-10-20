@@ -73,8 +73,8 @@ define([
 
   InfiniteScroll.prototype.createLoadingMore = function () {
     var $option = $(
-      '<li class="select2-results__option load-more" role="treeitem" aria-disabled="true"></li>'
-    );
+      '<li role="treeitem" aria-disabled="true"></li>'
+    ).addClass('select2-results__option load-more');
 
     var message = this.options.get('translations').get('loadingMore');
 
