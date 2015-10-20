@@ -784,7 +784,13 @@ S2.define('select2/results',[
       )
     );
 
+    $message[0].className += ' select2-results__message';
+
     this.$results.append($message);
+  };
+
+  Results.prototype.hideMessages = function () {
+    this.$results.find('.select2-results__message').remove();
   };
 
   Results.prototype.append = function (data) {
@@ -986,6 +992,7 @@ S2.define('select2/results',[
     });
 
     container.on('query', function (params) {
+      self.hideMessages();
       self.showLoading(params);
     });
 
@@ -1369,7 +1376,7 @@ S2.define('select2/selection/base',[
   BaseSelection.prototype._handleBlur = function (evt) {
     var self = this;
 
-    // This needs to be delayed as the actve element is the body when the tab
+    // This needs to be delayed as the active element is the body when the tab
     // key is pressed, possibly along with others.
     window.setTimeout(function () {
       // Don't trigger `blur` if the focus is still in the selection
@@ -3766,6 +3773,10 @@ S2.define('select2/dropdown',[
     return $dropdown;
   };
 
+  Dropdown.prototype.bind = function () {
+    // Should be implemented in subclasses
+  };
+
   Dropdown.prototype.position = function ($dropdown, $container) {
     // Should be implmented in subclasses
   };
@@ -3992,8 +4003,8 @@ S2.define('select2/dropdown/infiniteScroll',[
 
   InfiniteScroll.prototype.createLoadingMore = function () {
     var $option = $(
-      '<li class="option load-more" role="treeitem"></li>'
-    );
+      '<li role="treeitem" aria-disabled="true"></li>'
+    ).addClass('select2-results__option load-more');
 
     var message = this.options.get('translations').get('loadingMore');
 
@@ -4315,6 +4326,56 @@ S2.define('select2/dropdown/closeOnSelect',[
   return CloseOnSelect;
 });
 
+S2.define('select2/dropdown/loadingSpinner',[
+  'jquery'
+], function ($) {
+
+    function LoadingSpinner (decorated, $element, options, dataAdapter) {
+
+        decorated.call(this, $element, options, dataAdapter);
+
+    }
+
+    LoadingSpinner.prototype.getSelectionContainer = function() {
+
+        return this.$element.data().select2.$selection;
+
+    };
+
+    LoadingSpinner.prototype.showLoading = function (decorated, params) {
+
+        // Find the select2 container.
+        var $container = this.getSelectionContainer();
+
+        // Try to find an existing spinner..
+        var $spinner = $('.select2-loading', $container);
+
+        // Do we not have a spinner?
+        if($spinner.length === 0) {
+
+            // Create a new loading spinner.
+            $spinner = $('<span>')
+                .attr('role', 'presentation')
+                .addClass('select2-loading');
+
+            // Add the loading spinner to the element.
+            $container.prepend($spinner);
+
+        }
+
+    };
+
+    LoadingSpinner.prototype.hideLoading = function (decorated, params) {
+
+        // Remove the loading spinner, if it exists.
+        this.getSelectionContainer().find('.select2-loading').remove();
+
+    };
+
+    return LoadingSpinner;
+
+});
+
 S2.define('select2/i18n/en',[],function () {
   // English
   return {
@@ -4394,6 +4455,7 @@ S2.define('select2/defaults',[
   './dropdown/minimumResultsForSearch',
   './dropdown/selectOnClose',
   './dropdown/closeOnSelect',
+  './dropdown/loadingSpinner',
 
   './i18n/en'
 ], function ($, require,
@@ -4410,6 +4472,7 @@ S2.define('select2/defaults',[
 
              Dropdown, DropdownSearch, HidePlaceholder, InfiniteScroll,
              AttachBody, MinimumResultsForSearch, SelectOnClose, CloseOnSelect,
+             LoadingSpinner,
 
              EnglishTranslation) {
   function Defaults () {
@@ -4481,6 +4544,11 @@ S2.define('select2/defaults',[
 
     if (options.resultsAdapter == null) {
       options.resultsAdapter = ResultsList;
+
+      options.resultsAdapter = Utils.Decorate(
+          options.resultsAdapter,
+          LoadingSpinner
+      );
 
       if (options.ajax != null) {
         options.resultsAdapter = Utils.Decorate(
