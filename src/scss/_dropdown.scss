@@ -35,6 +35,11 @@
   &[aria-selected] {
     cursor: pointer;
   }
+
+  &.loading-results,
+  &.load-more {
+    cursor: wait !important;
+  }
 }
 
 .select2-container--open .select2-dropdown {

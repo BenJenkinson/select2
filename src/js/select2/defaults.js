@@ -32,6 +32,7 @@ define([
   './dropdown/minimumResultsForSearch',
   './dropdown/selectOnClose',
   './dropdown/closeOnSelect',
+  './dropdown/loadingSpinner',
 
   './i18n/en'
 ], function ($, require,
@@ -48,6 +49,7 @@ define([
 
              Dropdown, DropdownSearch, HidePlaceholder, InfiniteScroll,
              AttachBody, MinimumResultsForSearch, SelectOnClose, CloseOnSelect,
+             LoadingSpinner,
 
              EnglishTranslation) {
   function Defaults () {
@@ -119,6 +121,11 @@ define([
 
     if (options.resultsAdapter == null) {
       options.resultsAdapter = ResultsList;
+
+      options.resultsAdapter = Utils.Decorate(
+          options.resultsAdapter,
+          LoadingSpinner
+      );
 
       if (options.ajax != null) {
         options.resultsAdapter = Utils.Decorate(
