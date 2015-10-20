@@ -5459,7 +5459,7 @@ S2.define('jquery.select2',[
 
         var args = Array.prototype.slice.call(arguments, 1);
 
-        var ret = instance[options](args);
+        var ret = instance[options].apply(instance, args);
 
         // Check if we should be returning `this`
         if ($.inArray(options, thisMethods) > -1) {
